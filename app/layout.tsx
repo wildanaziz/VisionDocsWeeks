@@ -21,9 +21,11 @@ const monoFont = Space_Mono({
 
 export const metadata: Metadata = {
   title: "Visioneer Homebase",
-  metadataBase: new URL("https://ariadocs.vercel.app/"),
   description:
-    "This comprehensive documentation template, crafted with Next.js and available as open-source, delivers a sleek and responsive design, tailored to meet all your project documentation requirements.",
+    "Welcome to Visioneer Homebase, your gateway to the world of computer vision research and development. Explore our resources, projects, and community-driven initiatives to enhance your understanding and skills in computer vision.",
+  icons: {
+    icon: "/favicon.ico", // Updated to include leading slash for correct path
+  },
 };
 
 export default function RootLayout({
@@ -34,11 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
-        />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </head>
       <body
         className={`${sansFont.variable} ${monoFont.variable} font-regular antialiased tracking-wide`}
