@@ -8,10 +8,12 @@ import rehypeSlug from "rehype-slug";
 import rehypeCodeTitles from "rehype-code-titles";
 import { page_routes, ROUTES } from "./routes-config";
 import { visit } from "unist-util-visit";
+import type { Node } from "unist";
+import type { Element, ElementContent, Text } from "hast";
 import matter from "gray-matter";
 import { getIconName, hasSupportedExtension } from "./utils";
 
-// custom components imports
+// Custom components imports
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Pre from "@/components/markdown/pre";
 import Note from "@/components/markdown/note";
@@ -30,7 +32,7 @@ import {
 } from "@/components/ui/table";
 import { YouTube } from "@/components/youtube";
 
-// add custom components
+// Add custom components
 const components = {
   Tabs,
   TabsContent,
@@ -49,11 +51,11 @@ const components = {
   th: TableHead,
   tr: TableRow,
   tbody: TableBody,
-  t: TableCell,
-  YouTube, // Added YouTube component for MDX embedding
+  td: TableCell,
+  YouTube,
 };
 
-// can be used for other pages like blogs, Guides etc
+// Can be used for other pages like blogs, Guides etc
 async function parseMdx<Frontmatter>(rawMdx: string) {
   return await compileMDX<Frontmatter>({
     source: rawMdx,
@@ -76,8 +78,7 @@ async function parseMdx<Frontmatter>(rawMdx: string) {
   });
 }
 
-// logic for docs
-
+// Logic for docs
 export type BaseMdxFrontmatter = {
   title: string;
   description: string;
@@ -96,7 +97,6 @@ export async function getCompiledDocsForSlug(slug: string) {
 export async function getDocsTocs(slug: string) {
   const contentPath = getDocsContentPath(slug);
   const rawMdx = await fs.readFile(contentPath, "utf-8");
-  // captures between ## - #### can modify accordingly
   const headingsRegex = /^(#{2,4})\s(.+)$/gm;
   let match;
   const extractedHeadings = [];
@@ -165,23 +165,28 @@ export async function getAllChilds(pathString: string) {
   );
 }
 
-// for copying the code in pre
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const preProcess = () => (tree: any) => {
-  visit(tree, (node) => {
-    if (node?.type === "element" && node?.tagName === "pre") {
-      const [codeEl] = node.children;
+// Define custom interface for nodes with additional properties
+interface CustomElement extends Element {
+  raw?: string;
+  properties: Record<string, string | string[]>;
+  children: ElementContent[];
+}
+
+const preProcess = () => (tree: Node) => {
+  visit(tree, "element", (node: CustomElement) => {
+    if (node.type === "element" && node.tagName === "pre") {
+      const [codeEl] = node.children as CustomElement[];
       if (codeEl.tagName !== "code") return;
-      node.raw = codeEl.children?.[0].value;
+      const firstChild = codeEl.children?.[0] as Text;
+      node.raw = firstChild?.value ?? "";
     }
   });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const postProcess = () => (tree: any) => {
-  visit(tree, "element", (node) => {
-    if (node?.type === "element" && node?.tagName === "pre") {
-      node.properties["raw"] = node.raw;
+const postProcess = () => (tree: Node) => {
+  visit(tree, "element", (node: CustomElement) => {
+    if (node.type === "element" && node.tagName === "pre") {
+      node.properties["raw"] = node.raw ?? "";
     }
   });
 };
@@ -260,21 +265,18 @@ export async function getDocFrontmatter(path: string) {
 }
 
 function rehypeCodeTitlesWithLogo() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (tree: any) => {
-    visit(tree, "element", (node) => {
+  return (tree: Node) => {
+    visit(tree, "element", (node: CustomElement) => {
       if (
-        node?.tagName === "div" &&
-        node?.properties?.className?.includes("rehype-code-title")
+        node.type === "element" &&
+        node.properties?.className?.includes("rehype-code-title")
       ) {
         const titleTextNode = node.children.find(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (child: any) => child.type === "text"
-        );
+          (child) => child.type === "text"
+        ) as Text;
         if (!titleTextNode) return;
 
-        // Extract filename and language
-        const titleText = titleTextNode.value;
+        const titleText = titleTextNode.value ?? "";
         const match = hasSupportedExtension(titleText);
         if (!match) return;
 
@@ -282,14 +284,14 @@ function rehypeCodeTitlesWithLogo() {
         const ext = splittedNames[splittedNames.length - 1];
         const iconClass = `devicon-${getIconName(ext)}-plain text-[17px]`;
 
-        // Insert icon before title text
         if (iconClass) {
-          node.children.unshift({
+          const newElement: CustomElement = {
             type: "element",
             tagName: "i",
             properties: { className: [iconClass, "code-icon"] },
             children: [],
-          });
+          };
+          node.children.unshift(newElement);
         }
       }
     });

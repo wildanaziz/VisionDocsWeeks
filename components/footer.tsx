@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { buttonVariants } from "./ui/button";
-import { ShipIcon, HeartIcon, TriangleIcon } from "lucide-react";
+// import { buttonVariants } from "./ui/button";
+import { ShipIcon } from "lucide-react";
 
 export function Footer() {
   return (

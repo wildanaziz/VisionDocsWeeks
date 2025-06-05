@@ -1,20 +1,15 @@
 "use client";
-import { getDocsTocs } from "@/lib/markdown";
 import TocObserver from "./toc-observer";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect } from "react";
 
-export default function Toc({ path }: { path: string }) {
-  const [tocs, setTocs] = useState<any>(null);
+// Definisikan tipe untuk tocs
+type TocItem = {
+  level: number;
+  text: string;
+  href: string;
+};
 
-  useEffect(() => {
-    async function fetchTocs() {
-      const data = await getDocsTocs(path);
-      setTocs(data);
-    }
-    fetchTocs();
-  }, [path]);
-
+export default function Toc({ tocs }: { tocs: TocItem[] }) {
   if (!tocs) return <div>Loading...</div>;
 
   return (
