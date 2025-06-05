@@ -1,5 +1,6 @@
 import DocsBreadcrumb from "@/components/docs-breadcrumb";
 import Pagination from "@/components/pagination";
+import { Suspense } from "react";
 import Toc from "@/components/toc";
 import { page_routes } from "@/lib/routes-config";
 import { notFound } from "next/navigation";
@@ -36,7 +37,9 @@ export default async function DocsPage(props: PageProps) {
         </div>
       </div>
 
-      <Toc path={pathName} />
+      <Suspense fallback={<div>Loading TOC...</div>}>
+        <Toc path={pathName} />
+      </Suspense>
     </div>
   );
 }
