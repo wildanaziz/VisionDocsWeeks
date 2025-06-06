@@ -33,7 +33,7 @@ export async function generateMetadata(props: PageProps) {
 export async function generateStaticParams() {
   const val = await getAllBlogStaticPaths();
   if (!val) return [];
-  return val.map((it) => ({ slug: it }));
+  return val.map((it: string) => ({ slug: it }));
 }
 
 export default async function BlogPage(props: PageProps) {
@@ -96,7 +96,7 @@ export default async function BlogPage(props: PageProps) {
 function Authors({ authors }: { authors: Author[] }) {
   return (
     <div className="flex items-center gap-8 flex-wrap">
-      {authors.map((author) => {
+      {authors.map((author: Author) => {
         return (
           <Link
             href={author.handleUrl}

@@ -114,7 +114,7 @@ export async function getDocsTocs(slug: string) {
 }
 
 export function getPreviousNext(path: string) {
-  const index = page_routes.findIndex(({ href }) => href == `/${path}`);
+  const index = page_routes.findIndex(({ href }) => href === `/${path}`);
   return {
     prev: page_routes[index - 1],
     next: page_routes[index + 1],
@@ -135,12 +135,12 @@ function justGetFrontmatterFromMD<Frontmatter>(rawMd: string): Frontmatter {
 }
 
 export async function getAllChilds(pathString: string) {
-  const items = pathString.split("/").filter((it) => it != "");
+  const items = pathString.split("/").filter((it: string) => it !== "");
   let page_routes_copy = ROUTES;
 
   let prevHref = "";
   for (const it of items) {
-    const found = page_routes_copy.find((innerIt) => innerIt.href == `/${it}`);
+    const found = page_routes_copy.find((innerIt) => innerIt.href === `/${it}`);
     if (!found) break;
     prevHref += found.href;
     page_routes_copy = found.items ?? [];
@@ -148,7 +148,7 @@ export async function getAllChilds(pathString: string) {
   if (!prevHref) return [];
 
   return await Promise.all(
-    page_routes_copy.map(async (it) => {
+    page_routes_copy.map(async (it: { href: string }) => {
       const totalPath = path.join(
         process.cwd(),
         "/contents/docs/",
@@ -209,7 +209,7 @@ export async function getAllBlogStaticPaths() {
   try {
     const blogFolder = path.join(process.cwd(), "/contents/week/");
     const res = await fs.readdir(blogFolder);
-    return res.map((file) => file.split(".")[0]);
+    return res.map((file: string) => file.split(".")[0]);
   } catch (err) {
     console.log(err);
   }
@@ -219,7 +219,7 @@ export async function getAllBlogsFrontmatter() {
   const blogFolder = path.join(process.cwd(), "/contents/week/");
   const files = await fs.readdir(blogFolder);
   const uncheckedRes = await Promise.all(
-    files.map(async (file) => {
+    files.map(async (file: string) => {
       if (!file.endsWith(".mdx")) return undefined;
       const filepath = path.join(process.cwd(), `/contents/week/${file}`);
       const rawMdx = await fs.readFile(filepath, "utf-8");
@@ -229,7 +229,7 @@ export async function getAllBlogsFrontmatter() {
       };
     })
   );
-  return uncheckedRes.filter((it) => !!it) as (BlogMdxFrontmatter & {
+  return uncheckedRes.filter((it): it is NonNullable<typeof it> => !!it) as (BlogMdxFrontmatter & {
     slug: string;
   })[];
 }

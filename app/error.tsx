@@ -28,10 +28,7 @@ export default function Error({
       </div>
       <div className="flex items-center gap-2">
         <Button
-          onClick={
-            // Attempt to recover by trying to re-render the segment
-            () => reset()
-          }
+          onClick={() => reset()}
         >
           Reload page
         </Button>
